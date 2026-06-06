@@ -1,0 +1,48 @@
+# AutoPrime Docs — PWA (instalável + offline)
+
+App de controle de documentação e cobranças da Concept Auto Prime.
+Funciona no celular e no PC, instala na tela inicial e roda offline.
+
+## Arquivos
+- index.html ............ o app
+- manifest.webmanifest .. configuração do app instalável
+- sw.js ................. service worker (offline)
+- xlsx.full.min.js ...... exportação pra Excel (offline)
+- icons/ ............... ícones do app
+
+IMPORTANTE: PWA precisa rodar num endereço https:// (ou localhost).
+Abrir o index.html clicando direto (file://) NÃO instala nem fica offline.
+Use uma das opções abaixo.
+
+====================================================================
+OPÇÃO 1 — GitHub Pages (grátis, recomendado)
+====================================================================
+1. Crie um repositório novo no GitHub (ex: "autoprime-docs"), público.
+2. Suba TODOS os arquivos desta pasta (index.html, sw.js,
+   manifest.webmanifest, xlsx.full.min.js e a pasta icons/),
+   mantendo a mesma estrutura.
+3. No repositório: Settings > Pages > Branch: main > pasta /(root) > Save.
+4. Aguarde ~1 min. O endereço aparece em:
+   https://hericles38.github.io/autoprime-docs/
+5. Abra esse link no celular e no PC.
+
+INSTALAR:
+- Android/Chrome: menu (⋮) > "Instalar app" / "Adicionar à tela inicial".
+- iPhone/Safari: botão Compartilhar > "Adicionar à Tela de Início".
+- PC/Chrome ou Edge: ícone de instalar na barra de endereço.
+
+Depois de aberto uma vez online, funciona offline.
+
+====================================================================
+OPÇÃO 2 — Testar local no PC (rápido, só pra ver funcionando)
+====================================================================
+Dentro desta pasta, rode no terminal:
+   python -m http.server 8080
+Depois abra:  http://localhost:8080
+
+====================================================================
+ATUALIZAR / SINCRONIZAR ENTRE CELULAR E PC
+====================================================================
+Os dados ficam salvos em cada aparelho separadamente.
+Pra passar de um pro outro: use ⤓ Exportar (Backup .json) num aparelho
+e ⤒ Importar no outro. Faça isso de vez em quando como backup também.

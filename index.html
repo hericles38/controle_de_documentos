@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0d1117">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AutoPrime Docs">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Controle de Documentação — Concept Auto Prime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Manrope:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="./xlsx.full.min.js"></script>
+<style>
+:root{
+  --bg:#0d1117; --bg2:#11161f; --card:#161c27; --card2:#1c2330;
+  --line:#252d3a; --line2:#323c4d;
+  --txt:#e8edf4; --mut:#8a96a8; --mut2:#5d6878;
+  --amber:#ffb02e; --amber-d:#c97f12;
+  --red:#ff5d5d; --red-bg:#2a1518;
+  --orange:#ff9838; --orange-bg:#2a1f12;
+  --green:#46d18a; --green-bg:#10231a;
+  --blue:#5aa6ff;
+  --r:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{
+  background:var(--bg);
+  background-image:radial-gradient(circle at 15% -10%, #1a2233 0%, transparent 45%),
+                   radial-gradient(circle at 100% 0%, #1d1606 0%, transparent 40%);
+  background-attachment:fixed;
+  color:var(--txt); font-family:'Manrope',sans-serif;
+  font-size:15px; line-height:1.45; padding-bottom:80px;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:920px; margin:0 auto; padding:0 16px}
+
+/* HEADER */
+header{padding:26px 0 16px; position:relative}
+.brand{display:flex; align-items:center; gap:11px; margin-bottom:3px}
+.logo{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--amber),var(--amber-d));
+  display:grid;place-items:center;font-family:'Bricolage Grotesque';font-weight:800;color:#1a1206;font-size:20px;
+  box-shadow:0 4px 16px rgba(255,176,46,.25)}
+h1{font-family:'Bricolage Grotesque';font-weight:800;font-size:23px;letter-spacing:-.02em;line-height:1.05}
+.sub{color:var(--mut);font-size:12.5px;font-weight:500}
+.today{color:var(--mut2);font-size:12px;margin-top:2px;font-family:'Space Mono'}
+
+/* SUMMARY */
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0 6px}
+.kc{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:13px 14px;position:relative;overflow:hidden}
+.kc .n{font-family:'Bricolage Grotesque';font-weight:800;font-size:26px;letter-spacing:-.02em;line-height:1}
+.kc .l{color:var(--mut);font-size:11px;font-weight:600;margin-top:5px;text-transform:uppercase;letter-spacing:.04em}
+.kc.crit .n{color:var(--red)} .kc.warn .n{color:var(--orange)}
+.kc.money{grid-column:span 1} .kc.money .n{color:var(--amber);font-size:18px}
+.kc::after{content:'';position:absolute;right:-12px;top:-12px;width:46px;height:46px;border-radius:50%;opacity:.07;background:currentColor}
+@media(max-width:560px){.cards{grid-template-columns:repeat(2,1fr)} .kc .n{font-size:22px} .kc.money .n{font-size:16px}}
+
+/* TABS */
+.tabs{display:flex;gap:6px;margin:20px 0 14px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:5px}
+.tab{flex:1;padding:9px;border:none;background:transparent;color:var(--mut);font-family:'Manrope';font-weight:700;font-size:13.5px;border-radius:8px;cursor:pointer;transition:.15s;display:flex;align-items:center;justify-content:center;gap:6px}
+.tab.on{background:var(--card2);color:var(--txt);box-shadow:0 1px 8px rgba(0,0,0,.3)}
+.tab .b{background:var(--line2);color:var(--txt);font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;font-family:'Space Mono'}
+.tab.on .b{background:var(--amber);color:#1a1206}
+
+/* CONTROLS */
+.ctrls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.search{flex:1;min-width:160px;position:relative}
+.search input{width:100%;background:var(--card);border:1px solid var(--line);color:var(--txt);padding:10px 12px 10px 34px;border-radius:10px;font-family:'Manrope';font-size:14px;outline:none}
+.search input:focus{border-color:var(--line2)}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;stroke:var(--mut2)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{padding:7px 12px;border:1px solid var(--line);background:var(--card);color:var(--mut);border-radius:20px;font-size:12.5px;font-weight:600;cursor:pointer;transition:.13s;white-space:nowrap}
+.chip:hover{border-color:var(--line2);color:var(--txt)}
+.chip.on{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+.chip.crit.on{background:var(--red);border-color:var(--red);color:#fff}
+.chip.warn.on{background:var(--orange);border-color:var(--orange);color:#1a1206}
+.chip.rec.on{background:var(--green);border-color:var(--green);color:#06180f}
+
+/* LIST */
+.list{display:flex;flex-direction:column;gap:10px}
+.v{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;position:relative;transition:.15s;border-left:3px solid var(--line2)}
+.v.crit{border-left-color:var(--red)} .v.warn{border-left-color:var(--orange)} .v.rec{border-left-color:var(--green)}
+.v.done{opacity:.5}
+.v-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.v-mod{font-family:'Bricolage Grotesque';font-weight:700;font-size:15.5px;letter-spacing:-.01em;line-height:1.2}
+.v-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:7px}
+.plate{font-family:'Space Mono';font-weight:700;font-size:12px;background:#0a0d12;border:1px solid var(--line2);color:var(--amber);padding:2px 8px;border-radius:5px;letter-spacing:.03em}
+.year{font-family:'Space Mono';font-weight:700;font-size:11.5px;background:rgba(90,166,255,.1);border:1px solid #2d4a6b;color:var(--blue);padding:2px 7px;border-radius:5px}
+
+.resp{font-size:12px;color:var(--mut);font-weight:600}
+.resp::before{content:'•';margin-right:7px;color:var(--mut2)}
+.age{font-family:'Space Mono';font-size:11.5px;padding:2px 8px;border-radius:20px;font-weight:700;white-space:nowrap}
+.age.crit{background:var(--red-bg);color:var(--red)} .age.warn{background:var(--orange-bg);color:var(--orange)} .age.rec{background:var(--green-bg);color:var(--green)} .age.none{background:var(--line);color:var(--mut)}
+.pends{display:flex;gap:6px;flex-wrap:wrap;margin-top:11px}
+.pend{font-size:11.5px;font-weight:700;background:var(--card2);border:1px solid var(--line2);color:var(--txt);padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:6px;cursor:pointer;transition:.13s}
+.pend:hover{border-color:var(--red);color:var(--red)}
+.pend .x{opacity:.5;font-weight:700} .pend:hover .x{opacity:1}
+.pend.tag-ipva{border-color:var(--amber-d)} .pend.tag-laudo{} 
+.nopend{font-size:12px;color:var(--green);font-weight:600}
+.desp{font-size:11.5px;color:var(--mut2);margin-top:9px;font-family:'Space Mono'}
+.desp b{color:var(--mut);font-weight:700}
+.v-acts{display:flex;gap:6px;margin-top:12px;padding-top:11px;border-top:1px solid var(--line)}
+.act{background:transparent;border:1px solid var(--line2);color:var(--mut);padding:6px 11px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;font-family:'Manrope';transition:.13s;display:flex;align-items:center;gap:5px}
+.act:hover{color:var(--txt);border-color:var(--mut)}
+.act.ok:hover{border-color:var(--green);color:var(--green)}
+.act.del:hover{border-color:var(--red);color:var(--red)}
+
+/* DEBITOS */
+.d{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;align-items:center;gap:13px;transition:.15s}
+.d.paid{opacity:.45}
+.d-check{width:24px;height:24px;border-radius:7px;border:2px solid var(--line2);flex-shrink:0;cursor:pointer;display:grid;place-items:center;transition:.13s}
+.d.paid .d-check{background:var(--green);border-color:var(--green)}
+.d-check svg{width:13px;height:13px;stroke:#06180f;stroke-width:3;opacity:0}
+.d.paid .d-check svg{opacity:1}
+.d-info{flex:1;min-width:0}
+.d-mod{font-family:'Bricolage Grotesque';font-weight:700;font-size:14.5px;line-height:1.15}
+.d.paid .d-mod{text-decoration:line-through}
+.d-sub{font-size:11.5px;color:var(--mut);margin-top:3px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.d-tipo{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:5px;background:var(--orange-bg);color:var(--orange)}
+.d-tipo.ipva{background:rgba(255,176,46,.12);color:var(--amber)}
+.d-val{font-family:'Bricolage Grotesque';font-weight:800;font-size:16px;color:var(--amber);white-space:nowrap}
+.d.paid .d-val{color:var(--mut)}
+.d-rm{background:none;border:none;color:var(--mut2);cursor:pointer;font-size:18px;padding:0 4px;line-height:1}
+.d-rm:hover{color:var(--red)}
+.dtotal{background:linear-gradient(135deg,var(--card2),var(--card));border:1px solid var(--amber-d);border-radius:var(--r);padding:16px 18px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.dtotal .lab{font-size:12px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.dtotal .lab b{display:block;color:var(--txt);font-size:13px;text-transform:none;letter-spacing:0;margin-top:2px;font-weight:600}
+.dtotal .big{font-family:'Bricolage Grotesque';font-weight:800;font-size:30px;color:var(--amber);letter-spacing:-.02em}
+.dtotal .rest{font-size:11.5px;color:var(--green);text-align:right;margin-top:2px;font-family:'Space Mono'}
+
+.empty{text-align:center;padding:50px 20px;color:var(--mut2)}
+.empty .e-ic{font-size:34px;margin-bottom:10px}
+
+/* FOOTER BAR */
+.fab{position:fixed;bottom:0;left:0;right:0;background:rgba(13,17,23,.92);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:11px 16px;z-index:40}
+.fab .wrap{display:flex;gap:8px;align-items:center}
+.add-btn{flex:1;background:linear-gradient(135deg,var(--amber),var(--amber-d));color:#1a1206;border:none;padding:12px;border-radius:11px;font-family:'Manrope';font-weight:800;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 4px 14px rgba(255,176,46,.22)}
+.io-btn{background:var(--card2);border:1px solid var(--line2);color:var(--mut);width:46px;height:46px;border-radius:11px;cursor:pointer;display:grid;place-items:center;font-size:18px;transition:.13s}
+.io-btn:hover{color:var(--txt);border-color:var(--mut)}
+
+/* MODAL */
+.modal{position:fixed;inset:0;background:rgba(5,7,10,.7);backdrop-filter:blur(4px);z-index:90;display:none;align-items:flex-end;justify-content:center}
+.modal.on{display:flex}
+.sheet{background:var(--bg2);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:20px 18px 28px;animation:up .25s cubic-bezier(.2,.8,.2,1)}
+@media(min-width:560px){.modal{align-items:center} .sheet{border-radius:18px}}
+@keyframes up{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.sheet h3{font-family:'Bricolage Grotesque';font-weight:800;font-size:19px;margin-bottom:16px}
+.fld{margin-bottom:13px}
+.fld label{display:block;font-size:12px;font-weight:700;color:var(--mut);margin-bottom:5px;text-transform:uppercase;letter-spacing:.03em}
+.fld input,.fld select{width:100%;background:var(--card);border:1px solid var(--line2);color:var(--txt);padding:11px 12px;border-radius:10px;font-family:'Manrope';font-size:14.5px;outline:none}
+.fld input:focus,.fld select:focus{border-color:var(--amber)}
+.fld .hint{font-size:11px;color:var(--mut2);margin-top:4px;font-weight:500;text-transform:none;letter-spacing:0}
+.frow{display:flex;gap:10px}.frow>*{flex:1}
+.msave{width:100%;background:linear-gradient(135deg,var(--amber),var(--amber-d));color:#1a1206;border:none;padding:13px;border-radius:11px;font-weight:800;font-size:15px;cursor:pointer;margin-top:6px;font-family:'Manrope'}
+.mcancel{width:100%;background:none;border:none;color:var(--mut);padding:11px;font-weight:600;cursor:pointer;margin-top:4px;font-family:'Manrope';font-size:13px}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card2);border:1px solid var(--line2);color:var(--txt);padding:11px 18px;border-radius:12px;font-size:13px;font-weight:600;opacity:0;transition:.25s;z-index:100;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">A</div>
+      <div>
+        <h1>Controle de Documentação</h1>
+        <div class="sub">Concept Auto Prime · pendências & cobranças</div>
+      </div>
+    </div>
+    <div class="today" id="today"></div>
+  </header>
+
+  <div class="cards" id="cards"></div>
+
+  <div class="tabs">
+    <button class="tab on" data-tab="docs" onclick="setTab('docs')">📋 Documentação <span class="b" id="b-docs">0</span></button>
+    <button class="tab" data-tab="deb" onclick="setTab('deb')">💰 Cobrar Thiago <span class="b" id="b-deb">0</span></button>
+  </div>
+
+  <!-- DOCS -->
+  <div id="view-docs">
+    <div class="ctrls">
+      <div class="search">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke-width="2"/><path d="m20 20-3-3" stroke-width="2" stroke-linecap="round"/></svg>
+        <input id="q" placeholder="Buscar placa ou modelo..." oninput="render()">
+      </div>
+    </div>
+    <div class="chips" id="chips-urg"></div>
+    <div class="chips" id="chips-resp"></div>
+    <div class="list" id="list-docs"></div>
+  </div>
+
+  <!-- DEBITOS -->
+  <div id="view-deb" style="display:none">
+    <div class="dtotal">
+      <div>
+        <div class="lab">Total a cobrar do Thiago<b id="d-pend-lab"></b></div>
+        <div class="rest" id="d-rest"></div>
+      </div>
+      <div class="big" id="d-total">R$ 0</div>
+    </div>
+    <div class="list" id="list-deb"></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<div class="fab"><div class="wrap">
+  <button class="add-btn" id="addbtn" onclick="openAdd()"><span style="font-size:18px">＋</span> <span id="addlbl">Adicionar veículo</span></button>
+  <button class="io-btn" title="Exportar" onclick="openExport()">⤓</button>
+  <button class="io-btn" title="Importar backup" onclick="document.getElementById('imp').click()">⤒</button>
+  <input type="file" id="imp" accept=".json" style="display:none" onchange="doImport(event)">
+</div></div>
+
+<!-- MODAL -->
+<div class="modal" id="modal"><div class="sheet" id="sheet"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const SEED_VEICULOS = [{"id": 4, "modelo": "HB20 1.0M COMFORT - PRATA", "ano": "22/23", "placa": "RUS-5B86", "resp": "", "entrada": null, "despachante": "", "pend": ["PROCURAÇÃO", "LAUDO", "IPVA"], "status": "pendente"}, {"id": 5, "modelo": "NIVUS HL TSI - CINZA", "ano": "23/24", "placa": "EOD-9E34", "resp": "Marcelo", "entrada": "2025-05-23", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 6, "modelo": "ARGO DRIVE 1.0 - CINZA", "ano": "23/23", "placa": "SIC-4D14", "resp": "Jaibe", "entrada": "2025-07-16", "despachante": "RAPOSO 13/01", "pend": ["LAUDO", "GRAVAME"], "status": "pendente"}, {"id": 7, "modelo": "DUSTER 1.6 E CVT - PRATA", "ano": "19/20", "placa": "QUE-4G75", "resp": "Jaibe", "entrada": "2025-07-26", "despachante": "", "pend": ["B.O"], "status": "pendente"}, {"id": 8, "modelo": "ONIX 10MT LT2 - PRETA", "ano": "23/24", "placa": "SIQ-9D55", "resp": "Thiago", "entrada": "2025-08-21", "despachante": "", "pend": ["IPVA", "LAUDO", "GRAVAME"], "status": "pendente"}, {"id": 9, "modelo": "FIAT CRONOS DRIVE 1.3 - BRANCO", "ano": "23/24", "placa": "SJG0H81", "resp": "Jaibe", "entrada": "2025-09-04", "despachante": "RAPOSO 21/05", "pend": ["VIRAR P", "LOJA"], "status": "pendente"}, {"id": 10, "modelo": "FIAT MOBI LIKE - CINZA", "ano": "23/24", "placa": "SIN-4G41", "resp": "Marcelo", "entrada": "2025-09-07", "despachante": "", "pend": ["LAUDO", "GRAVAME"], "status": "pendente"}, {"id": 11, "modelo": "HB20 CONFORT 1.0 - CINZA", "ano": "23/24", "placa": "SIE-4E70", "resp": "Marcelo", "entrada": "2025-09-19", "despachante": "RAPOSO 06/04", "pend": ["LAUDO", "GRAVAME"], "status": "pendente"}, {"id": 12, "modelo": "HYUNDAI HB20 1.0 CONFORT - PRETA", "ano": "16/16", "placa": "PXO-0I96", "resp": "Thiago", "entrada": "2025-09-21", "despachante": "", "pend": ["PROCURAÇÃO", "LAUDO", "IPVA"], "status": "pendente"}, {"id": 13, "modelo": "FIAT CRONOS DRIVE 1.3 - PRATA", "ano": "23/24", "placa": "SIN-5F92", "resp": "Jaibe", "entrada": "2025-09-22", "despachante": "", "pend": ["LAUDO"], "status": "pendente"}, {"id": 14, "modelo": "ARGO DRIVE 1.0 - PRATA", "ano": "24/25", "placa": "PVR-7F86", "resp": "Jaibe", "entrada": "2025-10-21", "despachante": "RAPOSO 21/05", "pend": ["VIRAR P", "LOJA"], "status": "pendente"}, {"id": 15, "modelo": "ONIX LT - PRETA", "ano": "24/25", "placa": "RNK-1E65", "resp": "Jaibe", "entrada": "2025-10-26", "despachante": "RAPOSO 06/04", "pend": ["MULTA"], "status": "pendente"}, {"id": 16, "modelo": "ONIX 10MT LT2 - PRATA", "ano": "24/25", "placa": "RNK-3I75", "resp": "Jaibe", "entrada": "2025-11-08", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 17, "modelo": "HB20 1.0 COMFORT - PRATA", "ano": "24/25", "placa": "UAI-3E01", "resp": "Jaibe", "entrada": "2025-11-10", "despachante": "", "pend": ["LAUDO"], "status": "pendente"}, {"id": 18, "modelo": "ONIX 1.0 LT - BRANCO", "ano": "23/24", "placa": "SIT-1B30", "resp": "Jaibe", "entrada": "2025-11-14", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 19, "modelo": "BMW X1 - CINZA", "ano": "19/20", "placa": "DRI-4I38", "resp": "Jaibe", "entrada": "2025-11-18", "despachante": "", "pend": ["B.O"], "status": "pendente"}, {"id": 20, "modelo": "ONIX LT 1.0 - BRANCA", "ano": "23/24", "placa": "SIS-2H14", "resp": "Eduardo", "entrada": "2025-11-20", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 21, "modelo": "ONIX PLUS LT - BRANCO", "ano": "23/23", "placa": "SHD-8H47", "resp": "Thiago", "entrada": "2025-11-23", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 22, "modelo": "SPIN PREMIER - BRANCO", "ano": "23/24", "placa": "SJG-2C01", "resp": "Jaibe", "entrada": "2025-12-17", "despachante": "", "pend": ["LAUDO"], "status": "pendente"}, {"id": 23, "modelo": "HB20 LIMITED - BRANCO", "ano": "23/24", "placa": "SYI-1G73", "resp": "Marcelo", "entrada": "2025-12-26", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 24, "modelo": "ONIX LT PLUS 1.0 - AZUL", "ano": "24/25", "placa": "SJH-5E06", "resp": "Marcelo", "entrada": "2026-01-10", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 25, "modelo": "POLO TRACK - CINZA", "ano": "24/25", "placa": "TDA-4D48", "resp": "Marcelo", "entrada": "2026-01-15", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 26, "modelo": "FORD KA SE PLUS AUTO 1.5 HA - CINZA", "ano": "18/19", "placa": "CPV-8678", "resp": "Jaibe", "entrada": "2026-02-03", "despachante": "", "pend": ["IPVA"], "status": "pendente"}, {"id": 27, "modelo": "HB20 COMFORT - PRETA", "ano": "24/25", "placa": "TCE3F21", "resp": "Marcelo", "entrada": "2026-02-06", "despachante": "", "pend": ["LAUDO"], "status": "pendente"}, {"id": 28, "modelo": "FORD KA - PRETO", "ano": "17/18", "placa": "GCI1C09", "resp": "Marcelo", "entrada": "2026-02-12", "despachante": "RAPOSO 16/04", "pend": ["IPVA"], "status": "pendente"}, {"id": 29, "modelo": "Chevrolet ONIX", "ano": "2025", "placa": "TCB-6J63", "resp": "Jaibe", "entrada": "2026-02-21", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 30, "modelo": "Jeep Renegade", "ano": "2021", "placa": "FSW-3J16", "resp": "Marcelo", "entrada": "2026-02-23", "despachante": "RAPOSO 16/04", "pend": ["IPVA"], "status": "pendente"}, {"id": 31, "modelo": "Honda Fit", "ano": "2008", "placa": "EFA-9B17", "resp": "Jaibe", "entrada": "2026-02-25", "despachante": "", "pend": ["LAUDO", "IPVA"], "status": "pendente"}, {"id": 32, "modelo": "Jeep COMPASS CINZA", "ano": "2017", "placa": "GBS-5223", "resp": "Jaibe", "entrada": "2026-03-06", "despachante": "RAPOSO 19/03", "pend": ["IPVA"], "status": "pendente"}, {"id": 33, "modelo": "KWID ZEN 1.0 - PRATA", "ano": "24/25", "placa": "TDC7E40", "resp": "Marcelo", "entrada": "2026-03-14", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 34, "modelo": "HB20 CONFORT - PRETA", "ano": "23/24", "placa": "SYB5B93", "resp": "Jaibe", "entrada": "2026-03-14", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 35, "modelo": "POLO - CINZA", "ano": "24/25", "placa": "SVU-7F23", "resp": "Jaibe", "entrada": "2026-03-14", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 36, "modelo": "Honda Civic CINZA", "ano": "14/15", "placa": "FSS-8G82", "resp": "Jaibe", "entrada": "2026-03-21", "despachante": "RAPOSO 12/05", "pend": ["IPVA"], "status": "pendente"}, {"id": 37, "modelo": "ONIX PLUS - CINZA", "ano": "24/25", "placa": "TCN-0C95", "resp": "Marcelo", "entrada": "2026-03-28", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 38, "modelo": "ONIX PLUS - PRATA", "ano": "22/23", "placa": "RVW-7C00", "resp": "Jaibe", "entrada": "2026-04-01", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 39, "modelo": "ARGO DRIVE CINZA", "ano": "2025", "placa": "TCG-2B94", "resp": "Marcelo", "entrada": "2026-04-11", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 40, "modelo": "DUSTER Dyn BRANCA", "ano": "2015", "placa": "AIL-9F43", "resp": "Jaibe", "entrada": "2026-04-14", "despachante": "", "pend": [], "status": "pendente"}, {"id": 41, "modelo": "KWID Intense", "ano": "2026", "placa": "UFB-3G49", "resp": "Marcelo", "entrada": "2026-04-25", "despachante": "", "pend": ["CONSIGNADO"], "status": "pendente"}, {"id": 42, "modelo": "Subaru TRIBECA CINZA", "ano": "2009", "placa": "ELH-4A05", "resp": "Jaibe", "entrada": "2026-04-25", "despachante": "", "pend": ["CONSIGNADO"], "status": "pendente"}, {"id": 43, "modelo": "Ford Fiesta PRETO", "ano": "2013", "placa": "FAE-5J98", "resp": "Marcelo", "entrada": "2026-04-25", "despachante": "", "pend": ["RESIDENCIA"], "status": "pendente"}, {"id": 44, "modelo": "T-Cross", "ano": "2024", "placa": "SVP-3B20", "resp": "Caue", "entrada": "2026-04-28", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 45, "modelo": "TRACKER - VERMELHO", "ano": "19/19", "placa": "FFT-6294", "resp": "Caue", "entrada": "2026-04-30", "despachante": "", "pend": ["IPVA"], "status": "pendente"}, {"id": 46, "modelo": "Fiesta preto", "ano": "2016", "placa": "GCF-5G77", "resp": "Marcelo", "entrada": "2026-05-02", "despachante": "", "pend": ["CONSIGNADO"], "status": "pendente"}, {"id": 47, "modelo": "EcoSport preto", "ano": "2018", "placa": "QMU-3I49", "resp": "Caue", "entrada": "2026-05-03", "despachante": "", "pend": ["CONFIRMAR THIAGO"], "status": "pendente"}, {"id": 48, "modelo": "HB20 S PRETO", "ano": "2015", "placa": "GBR-8362", "resp": "Jaibe", "entrada": "2026-06-09", "despachante": "", "pend": ["CONSIGNADO"], "status": "pendente"}, {"id": 49, "modelo": "ONIX PLUS PRATA", "ano": "2025", "placa": "TCU6F22", "resp": "Jaibe", "entrada": "2026-05-11", "despachante": "", "pend": ["LOCALIZA"], "status": "pendente"}, {"id": 50, "modelo": "KWID BRANCA", "ano": "2022", "placa": "RTA-9H11", "resp": "Jaibe", "entrada": "2026-05-12", "despachante": "", "pend": [], "status": "pendente"}, {"id": 51, "modelo": "ARGO CINZA", "ano": "2022", "placa": "RNW-8H31", "resp": "Jaibe", "entrada": "2026-05-17", "despachante": "", "pend": [], "status": "pendente"}, {"id": 52, "modelo": "ARGO CINZA", "ano": "2022", "placa": "RNW-8H02", "resp": "Marcelo", "entrada": "2026-05-17", "despachante": "", "pend": [], "status": "pendente"}, {"id": 53, "modelo": "CRONOS CINZA", "ano": "2024", "placa": "SYB-5C84", "resp": "Marcelo", "entrada": "2026-05-20", "despachante": "RAPOSO 20/05", "pend": ["VIRAR P", "LOJA"], "status": "pendente"}, {"id": 54, "modelo": "ARGO CINZA", "ano": "2022", "placa": "RNW-8H32", "resp": "Marcelo", "entrada": "2026-05-23", "despachante": "", "pend": [], "status": "pendente"}];
+const SEED_DEBITOS = [{"id": 1, "placa": "FSW-3J16", "modelo": "Jeep Renegade", "ano": "2021", "resp": "Marcelo", "tipo": "IPVA", "valor": 4512.29, "cobrado": false}, {"id": 2, "placa": "GCI1C09", "modelo": "Ford Ka Preto", "ano": "17/18", "resp": "Marcelo", "tipo": "IPVA", "valor": 1726.62, "cobrado": false}, {"id": 3, "placa": "EFA-9B17", "modelo": "Honda Fit LXL Dourado", "ano": "08/08", "resp": "", "tipo": "IPVA", "valor": 1451.14, "cobrado": false}, {"id": 4, "placa": "FFT-6294", "modelo": "Tracker Vermelho", "ano": "19/19", "resp": "Caue", "tipo": "IPVA", "valor": 3813.41, "cobrado": false}, {"id": 5, "placa": "EZS5627", "modelo": "JAC J3 Vermelho", "ano": "11/12", "resp": "", "tipo": "MULTAS E LIC", "valor": 947.53, "cobrado": false}, {"id": 6, "placa": "FSS-8G82", "modelo": "Honda Civic Cinza", "ano": "14/15", "resp": "Jaibe", "tipo": "IPVA", "valor": 1176.14, "cobrado": false}];
+
+
+/* ---------- estado ---------- */
+const LS = 'autoprime_docs_v1';
+let state = {tab:'docs', urg:'todos', resp:'todos'};
+let V=[], D=[];
+
+function load(){
+  try{
+    const raw = localStorage.getItem(LS);
+    if(raw){const o=JSON.parse(raw); V=o.V; D=o.D; return;}
+  }catch(e){}
+  V = JSON.parse(JSON.stringify(SEED_VEICULOS));
+  D = JSON.parse(JSON.stringify(SEED_DEBITOS));
+}
+function save(){
+  try{ localStorage.setItem(LS, JSON.stringify({V,D})); }catch(e){}
+}
+
+/* ---------- datas / urgência ---------- */
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+function diasDe(iso){ if(!iso) return null; const d=new Date(iso+'T00:00:00'); return Math.round((TODAY-d)/86400000); }
+function bucket(dias){ if(dias===null) return 'none'; if(dias>90) return 'crit'; if(dias>=30) return 'warn'; return 'rec'; }
+function ageLabel(dias){ if(dias===null) return 'sem data'; if(dias<0) return 'a entrar'; if(dias===0) return 'hoje'; return dias+'d'; }
+function fmtData(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
+function brl(n){ return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function temPend(v){ return v.status!=='concluido' && v.pend && v.pend.length>0; }
+
+/* ---------- render topo ---------- */
+function render(){
+  document.getElementById('today').textContent = 'Atualizado: ' + TODAY.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
+  const pend = V.filter(temPend);
+  const crit = pend.filter(v=>bucket(diasDe(v.entrada))==='crit').length;
+  const warn = pend.filter(v=>bucket(diasDe(v.entrada))==='warn').length;
+  const totalDeb = D.filter(d=>!d.cobrado).reduce((s,d)=>s+d.valor,0);
+  document.getElementById('cards').innerHTML = `
+    <div class="kc"><div class="n">${pend.length}</div><div class="l">Pendentes</div></div>
+    <div class="kc crit"><div class="n">${crit}</div><div class="l">Crítico +90d</div></div>
+    <div class="kc warn"><div class="n">${warn}</div><div class="l">Atenção 30-90d</div></div>
+    <div class="kc money"><div class="n">${brl(totalDeb)}</div><div class="l">A cobrar</div></div>`;
+  document.getElementById('b-docs').textContent = pend.length;
+  document.getElementById('b-deb').textContent = D.filter(d=>!d.cobrado).length;
+  renderChips(); renderDocs(); renderDeb();
+}
+
+function renderChips(){
+  const pend = V.filter(temPend);
+  const counts = {todos:pend.length, crit:0, warn:0, rec:0};
+  pend.forEach(v=>counts[bucket(diasDe(v.entrada))==='none'?'rec':bucket(diasDe(v.entrada))]++);
+  const urg=[['todos','Todos'],['crit','🔴 Crítico'],['warn','🟠 Atenção'],['rec','🟢 Recente']];
+  document.getElementById('chips-urg').innerHTML = urg.map(([k,l])=>
+    `<div class="chip ${k} ${state.urg===k?'on':''}" onclick="state.urg='${k}';render()">${l} <b style="font-family:Space Mono;font-size:11px">${counts[k]??0}</b></div>`).join('');
+  const resps = [...new Set(V.map(v=>v.resp).filter(Boolean))].sort();
+  document.getElementById('chips-resp').innerHTML =
+    `<div class="chip ${state.resp==='todos'?'on':''}" onclick="state.resp='todos';render()">Todos resp.</div>` +
+    resps.map(r=>`<div class="chip ${state.resp===r?'on':''}" onclick="state.resp='${r}';render()">${r}</div>`).join('');
+}
+
+function renderDocs(){
+  const q = document.getElementById('q').value.toLowerCase().trim();
+  let arr = V.filter(temPend);
+  if(state.urg!=='todos') arr = arr.filter(v=>{const b=bucket(diasDe(v.entrada)); return state.urg==='rec'?(b==='rec'||b==='none'):b===state.urg;});
+  if(state.resp!=='todos') arr = arr.filter(v=>v.resp===state.resp);
+  if(q) arr = arr.filter(v=>(v.modelo+' '+v.placa).toLowerCase().includes(q));
+  arr.sort((a,b)=>{const da=diasDe(a.entrada),db=diasDe(b.entrada); if(da===null)return 1; if(db===null)return -1; return db-da;});
+  const el = document.getElementById('list-docs');
+  if(!arr.length){ el.innerHTML = `<div class="empty"><div class="e-ic">✅</div>Nenhum veículo nesse filtro.</div>`; return; }
+  el.innerHTML = arr.map(v=>{
+    const dias=diasDe(v.entrada), b=bucket(dias);
+    const pends = v.pend.map((p,i)=>`<span class="pend" onclick="rmPend(${v.id},${i})">${p} <span class="x">✕</span></span>`).join('');
+    const desp = v.despachante?`<div class="desp"><b>Despachante:</b> ${v.despachante}</div>`:'';
+    return `<div class="v ${b}">
+      <div class="v-top">
+        <div style="min-width:0">
+          <div class="v-mod">${v.modelo||'(sem modelo)'}</div>
+          <div class="v-meta">
+            ${v.placa?`<span class="plate">${v.placa}</span>`:''}
+            ${v.ano?`<span class="year">${v.ano}</span>`:''}
+            ${v.resp?`<span class="resp">${v.resp}</span>`:''}
+          </div>
+        </div>
+        <span class="age ${b}">${ageLabel(dias)}</span>
+      </div>
+      <div class="pends">${pends||'<span class="nopend">sem pendência</span>'}</div>
+      ${desp}
+      <div style="font-size:11px;color:var(--mut2);margin-top:8px;font-family:Space Mono">Entrada: ${fmtData(v.entrada)}</div>
+      <div class="v-acts">
+        <button class="act ok" onclick="concluir(${v.id})">✓ Concluir</button>
+        <button class="act" onclick="openEdit(${v.id})">✎ Editar</button>
+        <button class="act del" onclick="rmV(${v.id})">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderDeb(){
+  const totalPend = D.filter(d=>!d.cobrado).reduce((s,d)=>s+d.valor,0);
+  const totalAll = D.reduce((s,d)=>s+d.valor,0);
+  const pagoCount = D.filter(d=>d.cobrado).length;
+  document.getElementById('d-total').textContent = brl(totalPend);
+  document.getElementById('d-pend-lab').textContent = `${D.filter(d=>!d.cobrado).length} de ${D.length} itens em aberto`;
+  document.getElementById('d-rest').textContent = pagoCount?`${pagoCount} já cobrado(s) · total geral ${brl(totalAll)}`:`total geral ${brl(totalAll)}`;
+  const el = document.getElementById('list-deb');
+  el.innerHTML = D.map(d=>`
+    <div class="d ${d.cobrado?'paid':''}">
+      <div class="d-check" onclick="togDeb(${d.id})"><svg viewBox="0 0 24 24" fill="none"><path d="m5 13 4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="d-info">
+        <div class="d-mod">${d.modelo}</div>
+        <div class="d-sub">
+          ${d.placa?`<span class="plate">${d.placa}</span>`:''}
+          ${d.ano?`<span class="year">${d.ano}</span>`:''}
+          <span class="d-tipo ${d.tipo.includes('IPVA')?'ipva':''}">${d.tipo}</span>
+          ${d.resp?`<span>${d.resp}</span>`:''}
+        </div>
+      </div>
+      <div class="d-val">${brl(d.valor)}</div>
+      <button class="d-rm" onclick="rmDeb(${d.id})">🗑</button>
+    </div>`).join('') || `<div class="empty"><div class="e-ic">💸</div>Nenhum débito.</div>`;
+}
+
+/* ---------- ações ---------- */
+function setTab(t){ state.tab=t; document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===t));
+  document.getElementById('view-docs').style.display=t==='docs'?'':'none';
+  document.getElementById('view-deb').style.display=t==='deb'?'':'none';
+  document.getElementById('addlbl').textContent=t==='docs'?'Adicionar veículo':'Adicionar débito';
+}
+function concluir(id){ const v=V.find(x=>x.id===id); v.status='concluido'; save(); render(); toast('Concluído ✓'); }
+function rmV(id){ if(confirm('Remover este veículo da lista?')){ V=V.filter(x=>x.id!==id); save(); render(); toast('Removido'); } }
+function rmPend(id,i){ const v=V.find(x=>x.id===id); v.pend.splice(i,1); save(); render(); toast('Pendência resolvida'); }
+function togDeb(id){ const d=D.find(x=>x.id===id); d.cobrado=!d.cobrado; save(); render(); }
+function rmDeb(id){ if(confirm('Remover este débito?')){ D=D.filter(x=>x.id!==id); save(); render(); } }
+
+/* ---------- modal add/edit ---------- */
+function closeModal(){ document.getElementById('modal').classList.remove('on'); }
+function openAdd(){ state.tab==='docs'?formV(null):formD(null); }
+function openEdit(id){ formV(V.find(x=>x.id===id)); }
+
+function formV(v){
+  const e=v||{modelo:'',placa:'',resp:'',entrada:'',despachante:'',pend:[]};
+  document.getElementById('sheet').innerHTML=`
+    <h3>${v?'Editar veículo':'Novo veículo'}</h3>
+    <div class="fld"><label>Modelo / descrição</label><input id="f-mod" value="${(e.modelo||'').replace(/"/g,'&quot;')}" placeholder="Ex: ONIX LT 1.0 - 23/24 - PRETA"></div>
+    <div class="frow">
+      <div class="fld"><label>Placa</label><input id="f-pl" value="${e.placa||''}" placeholder="ABC-1D23"></div>
+      <div class="fld"><label>Ano do carro</label><input id="f-an" value="${e.ano||''}" placeholder="23/24"></div>
+    </div>
+    <div class="fld"><label>Responsável</label><input id="f-rs" value="${e.resp||''}" placeholder="Marcelo"></div>
+    <div class="fld"><label>Data de entrada</label><input id="f-dt" type="date" value="${e.entrada||''}"><div class="hint">Usada pra calcular há quantos dias está pendente</div></div>
+    <div class="fld"><label>Despachante</label><input id="f-dp" value="${(e.despachante||'').replace(/"/g,'&quot;')}" placeholder="Ex: RAPOSO 12/05"></div>
+    <div class="fld"><label>Pendências</label><input id="f-pd" value="${(e.pend||[]).join(' / ')}" placeholder="LAUDO / GRAVAME / IPVA"><div class="hint">Separe por barra ( / ). Ex: LAUDO / IPVA</div></div>
+    <button class="msave" onclick="saveV(${v?v.id:'null'})">Salvar</button>
+    <button class="mcancel" onclick="closeModal()">Cancelar</button>`;
+  document.getElementById('modal').classList.add('on');
+}
+function saveV(id){
+  const get=x=>document.getElementById(x).value.trim();
+  const pend=get('f-pd').split('/').map(s=>s.trim()).filter(Boolean);
+  const obj={modelo:get('f-mod'),ano:get('f-an'),placa:get('f-pl'),resp:get('f-rs'),entrada:get('f-dt'),despachante:get('f-dp'),pend};
+  if(id!=null){ const v=V.find(x=>x.id===id); Object.assign(v,obj); if(pend.length)v.status='pendente'; }
+  else { obj.id=Math.max(0,...V.map(x=>x.id))+1; obj.status='pendente'; V.push(obj); }
+  save(); closeModal(); render(); toast('Salvo ✓');
+}
+
+function formD(d){
+  const e=d||{modelo:'',placa:'',resp:'',tipo:'IPVA',valor:''};
+  document.getElementById('sheet').innerHTML=`
+    <h3>Novo débito a cobrar</h3>
+    <div class="fld"><label>Modelo / descrição</label><input id="g-mod" value="${(e.modelo||'').replace(/"/g,'&quot;')}" placeholder="Ex: Honda Civic 14/15"></div>
+    <div class="frow">
+      <div class="fld"><label>Placa</label><input id="g-pl" value="${e.placa||''}"></div>
+      <div class="fld"><label>Ano</label><input id="g-an" value="${e.ano||''}" placeholder="23/24"></div>
+    </div>
+    <div class="fld"><label>Responsável</label><input id="g-rs" value="${e.resp||''}"></div>
+    <div class="frow">
+      <div class="fld"><label>Tipo</label><select id="g-tp"><option ${e.tipo==='IPVA'?'selected':''}>IPVA</option><option ${e.tipo&&e.tipo.includes('MULTA')?'selected':''}>MULTAS E LIC</option><option>LICENCIAMENTO</option><option>OUTRO</option></select></div>
+      <div class="fld"><label>Valor (R$)</label><input id="g-vl" type="number" step="0.01" value="${e.valor||''}" placeholder="0,00"></div>
+    </div>
+    <button class="msave" onclick="saveD()">Salvar</button>
+    <button class="mcancel" onclick="closeModal()">Cancelar</button>`;
+  document.getElementById('modal').classList.add('on');
+}
+function saveD(){
+  const get=x=>document.getElementById(x).value.trim();
+  const obj={id:Math.max(0,...D.map(x=>x.id))+1,modelo:get('g-mod'),ano:get('g-an'),placa:get('g-pl'),resp:get('g-rs'),tipo:get('g-tp'),valor:parseFloat(get('g-vl')||'0'),cobrado:false,data:''};
+  D.push(obj); save(); closeModal(); render(); toast('Débito adicionado ✓');
+}
+
+/* ---------- export / import ---------- */
+function openExport(){
+  document.getElementById('sheet').innerHTML=`
+    <h3>Exportar / Backup</h3>
+    <p style="color:var(--mut);font-size:13.5px;margin-bottom:16px">Guarde o backup no celular ou no PC. Pra usar no outro aparelho, é só importar o arquivo <b>.json</b> de volta.</p>
+    <button class="msave" onclick="expJSON()">⤓ Backup (.json) — recomendado</button>
+    <button class="msave" style="margin-top:8px;background:var(--card2);color:var(--txt)" onclick="expXLSX()">⤓ Planilha Excel (.xlsx)</button>
+    <button class="mcancel" onclick="closeModal()">Fechar</button>`;
+  document.getElementById('modal').classList.add('on');
+}
+function dl(name,blob){ const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); }
+function stamp(){ const d=new Date(); return d.toISOString().slice(0,10); }
+function expJSON(){ dl('autoprime_backup_'+stamp()+'.json', new Blob([JSON.stringify({V,D},null,1)],{type:'application/json'})); closeModal(); toast('Backup baixado'); }
+function expXLSX(){
+  const wb=XLSX.utils.book_new();
+  const docRows=V.map(v=>({Modelo:v.modelo,Ano:v.ano,Placa:v.placa,Responsavel:v.resp,Entrada:fmtData(v.entrada),Dias:diasDe(v.entrada),Despachante:v.despachante,Pendencias:(v.pend||[]).join(' / '),Status:v.status}));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(docRows),'Documentação');
+  const debRows=D.map(d=>({Modelo:d.modelo,Ano:d.ano,Placa:d.placa,Responsavel:d.resp,Tipo:d.tipo,Valor:d.valor,Cobrado:d.cobrado?'SIM':'NÃO'}));
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(debRows),'Cobrar Thiago');
+  XLSX.writeFile(wb,'autoprime_'+stamp()+'.xlsx'); closeModal(); toast('Excel baixado');
+}
+function doImport(ev){
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{ const o=JSON.parse(r.result); if(o.V&&o.D){V=o.V;D=o.D;save();render();toast('Backup importado ✓');} else toast('Arquivo inválido'); }catch(e){toast('Erro ao ler arquivo');} };
+  r.readAsText(f); ev.target.value='';
+}
+
+let tt;
+function toast(m){ const e=document.getElementById('toast'); e.textContent=m; e.classList.add('on'); clearTimeout(tt); tt=setTimeout(()=>e.classList.remove('on'),1800); }
+document.getElementById('modal').addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+
+load(); render();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+</script>
+</body>
+</html>
