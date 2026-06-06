@@ -1,5 +1,5 @@
 // Service Worker — AutoPrime Docs PWA
-const CACHE = 'autoprime-docs-v4';
+const CACHE = 'autoprime-docs-v5';
 
 // Arquivos do app (app shell) — ficam disponíveis offline
 const APP_SHELL = [

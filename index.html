@@ -244,9 +244,13 @@ function save(){
 
 /* ---------- datas / urgência ---------- */
 const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const PRAZO_DIAS = 30; // validade padrão do recibo (em dias)
 function diasDe(iso){ if(!iso) return null; const d=new Date(iso+'T00:00:00'); return Math.round((TODAY-d)/86400000); }
-function bucket(dias){ if(dias===null) return 'none'; if(dias>90) return 'crit'; if(dias>=30) return 'warn'; return 'rec'; }
-function ageLabel(dias){ if(dias===null) return 'sem data'; if(dias<0) return 'a entrar'; if(dias===0) return 'hoje'; return dias+'d'; }
+function addDias(iso,n){ if(!iso) return null; const d=new Date(iso+'T00:00:00'); d.setDate(d.getDate()+n); return d.toISOString().slice(0,10); }
+function validadeDe(v){ if(v.validade) return v.validade; if(v.entrada) return addDias(v.entrada, PRAZO_DIAS); return null; }
+function diasRestantes(v){ const val=validadeDe(v); if(!val) return null; const d=new Date(val+'T00:00:00'); return Math.round((d-TODAY)/86400000); }
+function bucket(d){ if(d===null) return 'none'; if(d<0) return 'crit'; if(d<=7) return 'warn'; return 'rec'; }
+function vencLabel(d){ if(d===null) return 'sem validade'; if(d<0) return 'VENCIDO'; if(d===0) return 'vence hoje'; return 'vence em '+d+'d'; }
 function fmtData(iso){ if(!iso) return '—'; const [y,m,d]=iso.split('-'); return d+'/'+m+'/'+y; }
 function brl(n){ return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 function temPend(v){ return v.status!=='concluido' && v.pend && v.pend.length>0; }
@@ -255,13 +259,13 @@ function temPend(v){ return v.status!=='concluido' && v.pend && v.pend.length>0;
 function render(){
   document.getElementById('today').textContent = 'Atualizado: ' + TODAY.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
   const pend = V.filter(temPend);
-  const crit = pend.filter(v=>bucket(diasDe(v.entrada))==='crit').length;
-  const warn = pend.filter(v=>bucket(diasDe(v.entrada))==='warn').length;
+  const crit = pend.filter(v=>bucket(diasRestantes(v))==='crit').length;
+  const warn = pend.filter(v=>bucket(diasRestantes(v))==='warn').length;
   const totalDeb = D.filter(d=>!d.cobrado).reduce((s,d)=>s+d.valor,0);
   document.getElementById('cards').innerHTML = `
     <div class="kc"><div class="n">${pend.length}</div><div class="l">Pendentes</div></div>
-    <div class="kc crit"><div class="n">${crit}</div><div class="l">Crítico +90d</div></div>
-    <div class="kc warn"><div class="n">${warn}</div><div class="l">Atenção 30-90d</div></div>
+    <div class="kc crit"><div class="n">${crit}</div><div class="l">Vencidos</div></div>
+    <div class="kc warn"><div class="n">${warn}</div><div class="l">Vence ≤ 7 dias</div></div>
     <div class="kc money"><div class="n">${brl(totalDeb)}</div><div class="l">A cobrar</div></div>`;
   document.getElementById('b-docs').textContent = pend.length;
   document.getElementById('b-deb').textContent = D.filter(d=>!d.cobrado).length;
@@ -271,8 +275,8 @@ function render(){
 function renderChips(){
   const pend = V.filter(temPend);
   const counts = {todos:pend.length, crit:0, warn:0, rec:0};
-  pend.forEach(v=>counts[bucket(diasDe(v.entrada))==='none'?'rec':bucket(diasDe(v.entrada))]++);
-  const urg=[['todos','Todos'],['crit','🔴 Crítico'],['warn','🟠 Atenção'],['rec','🟢 Recente']];
+  pend.forEach(v=>{const b=bucket(diasRestantes(v)); counts[b==='none'?'rec':b]++;});
+  const urg=[['todos','Todos'],['crit','🔴 Vencido'],['warn','🟠 Vence em breve'],['rec','🟢 No prazo']];
   document.getElementById('chips-urg').innerHTML = urg.map(([k,l])=>
     `<div class="chip ${k} ${state.urg===k?'on':''}" onclick="state.urg='${k}';render()">${l} <b style="font-family:Space Mono;font-size:11px">${counts[k]??0}</b></div>`).join('');
   const resps = [...new Set(V.map(v=>v.resp).filter(Boolean))].sort();
@@ -284,14 +288,14 @@ function renderChips(){
 function renderDocs(){
   const q = document.getElementById('q').value.toLowerCase().trim();
   let arr = V.filter(temPend);
-  if(state.urg!=='todos') arr = arr.filter(v=>{const b=bucket(diasDe(v.entrada)); return state.urg==='rec'?(b==='rec'||b==='none'):b===state.urg;});
+  if(state.urg!=='todos') arr = arr.filter(v=>{const b=bucket(diasRestantes(v)); return state.urg==='rec'?(b==='rec'||b==='none'):b===state.urg;});
   if(state.resp!=='todos') arr = arr.filter(v=>v.resp===state.resp);
   if(q) arr = arr.filter(v=>(v.modelo+' '+v.placa).toLowerCase().includes(q));
-  arr.sort((a,b)=>{const da=diasDe(a.entrada),db=diasDe(b.entrada); if(da===null)return 1; if(db===null)return -1; return db-da;});
+  arr.sort((a,b)=>{const da=diasRestantes(a),db=diasRestantes(b); if(da===null)return 1; if(db===null)return -1; return da-db;});
   const el = document.getElementById('list-docs');
   if(!arr.length){ el.innerHTML = `<div class="empty"><div class="e-ic">✅</div>Nenhum veículo nesse filtro.</div>`; return; }
   el.innerHTML = arr.map(v=>{
-    const dias=diasDe(v.entrada), b=bucket(dias);
+    const dias=diasRestantes(v), b=bucket(dias);
     const pends = v.pend.map((p,i)=>`<span class="pend" onclick="rmPend(${v.id},${i})">${p} <span class="x">✕</span></span>`).join('');
     const desp = v.despachante?`<div class="desp"><b>Despachante:</b> ${v.despachante}</div>`:'';
     return `<div class="v ${b}">
@@ -304,11 +308,11 @@ function renderDocs(){
             ${v.resp?`<span class="resp">${v.resp}</span>`:''}
           </div>
         </div>
-        <span class="age ${b}">${ageLabel(dias)}</span>
+        <span class="age ${b}">${vencLabel(dias)}</span>
       </div>
       <div class="pends">${pends||'<span class="nopend">sem pendência</span>'}</div>
       ${desp}
-      <div style="font-size:11px;color:var(--mut2);margin-top:8px;font-family:Space Mono">Entrada: ${fmtData(v.entrada)}</div>
+      <div style="font-size:11px;color:var(--mut2);margin-top:8px;font-family:Space Mono">Entrada ${fmtData(v.entrada)} · <b style="color:var(--mut)">Vence ${fmtData(validadeDe(v))}</b></div>
       <div class="v-acts">
         <button class="act ok" onclick="concluir(${v.id})">✓ Concluir</button>
         <button class="act" onclick="openEdit(${v.id})">✎ Editar</button>
@@ -370,7 +374,8 @@ function formV(v){
       <div class="fld"><label>Ano do carro</label><input id="f-an" value="${e.ano||''}" placeholder="23/24"></div>
     </div>
     <div class="fld"><label>Responsável</label><input id="f-rs" value="${e.resp||''}" placeholder="Marcelo"></div>
-    <div class="fld"><label>Data de entrada</label><input id="f-dt" type="date" value="${e.entrada||''}"><div class="hint">Usada pra calcular há quantos dias está pendente</div></div>
+    <div class="fld"><label>Data de entrada / recibo</label><input id="f-dt" type="date" value="${e.entrada||''}"><div class="hint">A validade é calculada como entrada + 30 dias</div></div>
+    <div class="fld"><label>Validade (vencimento)</label><input id="f-vd" type="date" value="${e.validade||''}"><div class="hint">Deixe vazio = calcula automático. Preencha pra forçar outra data (ex: laudo 90 dias).</div></div>
     <div class="fld"><label>Despachante</label><input id="f-dp" value="${(e.despachante||'').replace(/"/g,'&quot;')}" placeholder="Ex: RAPOSO 12/05"></div>
     <div class="fld"><label>Pendências</label><input id="f-pd" value="${(e.pend||[]).join(' / ')}" placeholder="LAUDO / GRAVAME / IPVA"><div class="hint">Separe por barra ( / ). Ex: LAUDO / IPVA</div></div>
     <button class="msave" onclick="saveV(${v?v.id:'null'})">Salvar</button>
@@ -380,7 +385,7 @@ function formV(v){
 function saveV(id){
   const get=x=>document.getElementById(x).value.trim();
   const pend=get('f-pd').split('/').map(s=>s.trim()).filter(Boolean);
-  const obj={modelo:get('f-mod'),ano:get('f-an'),placa:get('f-pl'),resp:get('f-rs'),entrada:get('f-dt'),despachante:get('f-dp'),pend};
+  const obj={modelo:get('f-mod'),ano:get('f-an'),placa:get('f-pl'),resp:get('f-rs'),entrada:get('f-dt'),validade:get('f-vd'),despachante:get('f-dp'),pend};
   if(id!=null){ const v=V.find(x=>x.id===id); Object.assign(v,obj); if(pend.length)v.status='pendente'; }
   else { obj.id=Math.max(0,...V.map(x=>x.id))+1; obj.status='pendente'; V.push(obj); }
   save(); closeModal(); render(); toast('Salvo ✓');
@@ -425,7 +430,7 @@ function stamp(){ const d=new Date(); return d.toISOString().slice(0,10); }
 function expJSON(){ dl('autoprime_backup_'+stamp()+'.json', new Blob([JSON.stringify({V,D},null,1)],{type:'application/json'})); closeModal(); toast('Backup baixado'); }
 function expXLSX(){
   const wb=XLSX.utils.book_new();
-  const docRows=V.map(v=>({Modelo:v.modelo,Ano:v.ano,Placa:v.placa,Responsavel:v.resp,Entrada:fmtData(v.entrada),Dias:diasDe(v.entrada),Despachante:v.despachante,Pendencias:(v.pend||[]).join(' / '),Status:v.status}));
+  const docRows=V.map(v=>({Modelo:v.modelo,Ano:v.ano,Placa:v.placa,Responsavel:v.resp,Entrada:fmtData(v.entrada),Validade:fmtData(validadeDe(v)),Dias_p_vencer:diasRestantes(v),Despachante:v.despachante,Pendencias:(v.pend||[]).join(' / '),Status:v.status}));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(docRows),'Documentação');
   const debRows=D.map(d=>({Modelo:d.modelo,Ano:d.ano,Placa:d.placa,Responsavel:d.resp,Tipo:d.tipo,Valor:d.valor,Cobrado:d.cobrado?'SIM':'NÃO'}));
   XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(debRows),'Cobrar Thiago');
